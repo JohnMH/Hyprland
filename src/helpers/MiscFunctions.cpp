@@ -922,3 +922,42 @@ int allocateSHMFile(size_t len) {
 
     return fd;
 }
+
+bool allocateSHMFilePair(size_t size, int* rw_fd_ptr, int* ro_fd_ptr) {
+    auto [fd, name] = openExclusiveShm();
+    if (fd < 0) {
+        return false;
+    }
+
+    // CLOEXEC is guaranteed to be set by shm_open
+    int ro_fd = shm_open(name.c_str(), O_RDONLY, 0);
+    if (ro_fd < 0) {
+        shm_unlink(name.c_str());
+        close(fd);
+        return false;
+    }
+
+    shm_unlink(name.c_str());
+
+    // Make sure the file cannot be re-opened in read-write mode (e.g. via
+    // "/proc/self/fd/" on Linux)
+    if (fchmod(fd, 0) != 0) {
+        close(fd);
+        close(ro_fd);
+        return false;
+    }
+
+    int ret;
+    do {
+        ret = ftruncate(fd, size);
+    } while (ret < 0 && errno == EINTR);
+    if (ret < 0) {
+        close(fd);
+        close(ro_fd);
+        return false;
+    }
+
+    *rw_fd_ptr = fd;
+    *ro_fd_ptr = ro_fd;
+    return true;
+}

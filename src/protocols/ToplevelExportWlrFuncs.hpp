@@ -240,4 +240,15 @@ static int32_t pixel_format_info_min_stride(const wlr_pixel_format_info* fmt, in
     return div_round_up(width * bytes_per_block, pixels_per_block);
 }
 
+static const std::vector<uint32_t> opaquePixelFormats = {
+    DRM_FORMAT_XRGB8888,     DRM_FORMAT_XBGR8888, DRM_FORMAT_RGBX8888, DRM_FORMAT_BGRX8888,    DRM_FORMAT_R8,          DRM_FORMAT_GR88,
+    DRM_FORMAT_RGB888,       DRM_FORMAT_BGR888,   DRM_FORMAT_RGBX4444, DRM_FORMAT_BGRX4444,    DRM_FORMAT_RGBX5551,    DRM_FORMAT_BGRX5551,
+    DRM_FORMAT_XRGB1555,     DRM_FORMAT_RGB565,   DRM_FORMAT_BGR565,   DRM_FORMAT_XRGB2101010, DRM_FORMAT_XBGR2101010, DRM_FORMAT_XBGR16161616F,
+    DRM_FORMAT_XBGR16161616, DRM_FORMAT_YVYU,     DRM_FORMAT_VYUY,     DRM_FORMAT_NV12,        DRM_FORMAT_P010,
+};
+
+static bool pixel_format_is_opaque(uint32_t fmt) {
+    return std::find(opaquePixelFormats.begin(), opaquePixelFormats.end(), fmt) != opaquePixelFormats.end();
+}
+
 #endif

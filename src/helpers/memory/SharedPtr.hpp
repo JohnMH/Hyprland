@@ -297,6 +297,6 @@ static CSharedPointer<U> makeShared(Args&&... args) {
 template <typename T>
 struct std::hash<CSharedPointer<T>> {
     std::size_t operator()(const CSharedPointer<T>& p) const noexcept {
-        return std::hash<void*>{}(p->impl_);
+        return std::hash<void*>{}(p.impl_);
     }
 };

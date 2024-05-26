@@ -10,19 +10,19 @@ class CIdleInhibitorResource;
 
 class CIdleInhibitor {
   public:
-    CIdleInhibitor(SP<CIdleInhibitorResource> resource_, wlr_surface* surf_);
+    CIdleInhibitor(SP<CIdleInhibitorResource> resource_, SP<CWLSurfaceResource> surf_);
 
     struct {
         CHyprSignalListener destroy;
     } listeners;
 
     WP<CIdleInhibitorResource> resource;
-    wlr_surface*               surface = nullptr;
+    WP<CWLSurfaceResource>     surface;
 };
 
 class CIdleInhibitorResource {
   public:
-    CIdleInhibitorResource(SP<CZwpIdleInhibitorV1> resource_, wlr_surface* surface_);
+    CIdleInhibitorResource(SP<CZwpIdleInhibitorV1> resource_, SP<CWLSurfaceResource> surface_);
     ~CIdleInhibitorResource();
 
     SP<CIdleInhibitor> inhibitor;
@@ -33,10 +33,12 @@ class CIdleInhibitorResource {
 
   private:
     SP<CZwpIdleInhibitorV1> resource;
-    wlr_surface*            surface     = nullptr;
+    WP<CWLSurfaceResource>  surface;
     bool                    destroySent = false;
 
-    DYNLISTENER(surfaceDestroy);
+    struct {
+        CHyprSignalListener destroySurface;
+    } listeners;
 };
 
 class CIdleInhibitProtocol : public IWaylandProtocol {
@@ -51,7 +53,7 @@ class CIdleInhibitProtocol : public IWaylandProtocol {
 
   private:
     void onManagerResourceDestroy(wl_resource* res);
-    void onCreateInhibitor(CZwpIdleInhibitManagerV1* pMgr, uint32_t id, wlr_surface* surface);
+    void onCreateInhibitor(CZwpIdleInhibitManagerV1* pMgr, uint32_t id, SP<CWLSurfaceResource> surface);
 
     void removeInhibitor(CIdleInhibitorResource*);
 
